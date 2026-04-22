@@ -2,9 +2,8 @@ package com.api_restaurante.api.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import com.api_restaurante.api.dto.produto.DadosAtualizacaoProduto;
+import com.api_restaurante.api.dto.produto.DadosCadastroProduto;
 import java.math.BigDecimal;
 
 @Entity
@@ -20,14 +19,35 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O nome do produto é obrigatório")
     private String nome;
 
     private String descricao;
 
-    @NotNull(message = "O preço é obrigatório")
-    @Positive(message = "O preço deve ser maior que zero")
     private BigDecimal preco;
 
-    private String categoria;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    public Produto(DadosCadastroProduto dados, Categoria categoria) {
+        this.nome = dados.nome();
+        this.descricao = dados.descricao();
+        this.preco = dados.preco();
+        this.categoria = categoria;
+    }
+
+    public void atualizarInformacoes(DadosAtualizacaoProduto dados, Categoria categoria) {
+        if (dados.nome() != null) {
+            this.nome = dados.nome();
+        }
+        if (dados.descricao() != null) {
+            this.descricao = dados.descricao();
+        }
+        if (dados.preco() != null) {
+            this.preco = dados.preco();
+        }
+        if (categoria != null) {
+            this.categoria = categoria;
+        }
+    }
 }

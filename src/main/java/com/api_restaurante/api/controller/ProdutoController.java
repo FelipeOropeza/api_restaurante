@@ -1,55 +1,67 @@
 package com.api_restaurante.api.controller;
 
+import com.api_restaurante.api.dto.produto.*;
+import com.api_restaurante.api.model.Categoria;
 import com.api_restaurante.api.model.Produto;
+import com.api_restaurante.api.repository.CategoriaRepository;
 import com.api_restaurante.api.repository.ProdutoRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/produtos")
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoRepository repository;
+    private final ProdutoRepository repository;
+    private final CategoriaRepository categoriaRepository;
+
+    public ProdutoController(ProdutoRepository repository, CategoriaRepository categoriaRepository) {
+        this.repository = repository;
+        this.categoriaRepository = categoriaRepository;
+    }
 
     @GetMapping
-    public ResponseEntity<List<Produto>> listar() {
-        var produtos = repository.findAll();
-        return ResponseEntity.ok(produtos);
+    public ResponseEntity<Page<DadosListagemProduto>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAll(paginacao).map(DadosListagemProduto::new);
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<DadosDetalhamentoProduto> buscarPorId(@PathVariable Long id) {
         var produto = repository.getReferenceById(id);
-        return ResponseEntity.ok(produto);
+        return ResponseEntity.ok(new DadosDetalhamentoProduto(produto));
     }
 
     @PostMapping
     @Transactional
-    public ResponseEntity<Produto> cadastrar(@RequestBody @Valid Produto produto, UriComponentsBuilder uriBuilder) {
-        var produtoSalvo = repository.save(produto);
-        var uri = uriBuilder.path("/produtos/{id}").buildAndExpand(produtoSalvo.getId()).toUri();
-        return ResponseEntity.created(uri).body(produtoSalvo);
+    public ResponseEntity<DadosDetalhamentoProduto> cadastrar(@RequestBody @Valid DadosCadastroProduto dados, UriComponentsBuilder uriBuilder) {
+        var categoria = categoriaRepository.getReferenceById(dados.idCategoria());
+        var produto = new Produto(dados, categoria);
+        repository.save(produto);
+        
+        var uri = uriBuilder.path("/produtos/{id}").buildAndExpand(produto.getId()).toUri();
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoProduto(produto));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping
     @Transactional
-    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody @Valid Produto dados) {
-        var produto = repository.getReferenceById(id);
+    public ResponseEntity<DadosDetalhamentoProduto> atualizar(@RequestBody @Valid DadosAtualizacaoProduto dados) {
+        var produto = repository.getReferenceById(dados.id());
         
-        // Atualiza os dados
-        produto.setNome(dados.getNome());
-        produto.setDescricao(dados.getDescricao());
-        produto.setPreco(dados.getPreco());
-        produto.setCategoria(dados.getCategoria());
-
-        return ResponseEntity.ok(produto);
+        Categoria categoria = null;
+        if (dados.idCategoria() != null) {
+            categoria = categoriaRepository.getReferenceById(dados.idCategoria());
+        }
+        
+        produto.atualizarInformacoes(dados, categoria);
+        
+        return ResponseEntity.ok(new DadosDetalhamentoProduto(produto));
     }
 
     @DeleteMapping("/{id}")
