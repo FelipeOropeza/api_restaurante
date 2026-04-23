@@ -7,6 +7,9 @@ import com.api_restaurante.api.model.Categoria;
 import com.api_restaurante.api.repository.CategoriaRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,9 +37,9 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DadosListagemCategoria>> listar() {
-        var categorias = repository.findAll().stream().map(DadosListagemCategoria::new).toList();
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<Page<DadosListagemCategoria>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        var page = repository.findAll(paginacao).map(DadosListagemCategoria::new);
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{id}")
