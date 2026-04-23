@@ -30,6 +30,15 @@ public class SecurityConfigurations {
                     req.requestMatchers(HttpMethod.POST, "/usuarios").permitAll();
                     req.requestMatchers(HttpMethod.GET, "/produtos/**").permitAll();
                     req.requestMatchers(HttpMethod.GET, "/categorias/**").permitAll();
+                    
+                    // Restrições de Admin
+                    req.requestMatchers(HttpMethod.POST, "/produtos/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.PUT, "/produtos/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/produtos/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.POST, "/categorias/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.PUT, "/categorias/**").hasRole("ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/categorias/**").hasRole("ADMIN");
+                    
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

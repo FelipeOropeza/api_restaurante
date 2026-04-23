@@ -24,9 +24,15 @@ public class Usuario implements UserDetails {
     private String nome;
     private String email;
     private String senha;
+    
+    @Enumerated(EnumType.STRING)
+    private TipoUsuario tipo = TipoUsuario.CLIENTE;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.tipo == TipoUsuario.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 

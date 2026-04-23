@@ -24,6 +24,7 @@ public class AdminUserSeeder implements CommandLineRunner {
             admin.setNome("Administrador");
             admin.setEmail("admin@restaurante.com");
             admin.setSenha(passwordEncoder.encode("admin123"));
+            admin.setTipo(com.api_restaurante.api.model.TipoUsuario.ADMIN);
             repository.save(admin);
             System.out.println(">>> Usuario ADMIN criado com sucesso! Email: admin@restaurante.com | Senha: admin123");
         }

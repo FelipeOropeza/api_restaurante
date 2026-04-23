@@ -1,5 +1,6 @@
 package com.api_restaurante.api.controller;
 
+import com.api_restaurante.api.dto.categoria.DadosAtualizacaoCategoria;
 import com.api_restaurante.api.dto.categoria.DadosCadastroCategoria;
 import com.api_restaurante.api.dto.categoria.DadosListagemCategoria;
 import com.api_restaurante.api.model.Categoria;
@@ -36,5 +37,26 @@ public class CategoriaController {
     public ResponseEntity<List<DadosListagemCategoria>> listar() {
         var categorias = repository.findAll().stream().map(DadosListagemCategoria::new).toList();
         return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DadosListagemCategoria> buscarPorId(@PathVariable Long id) {
+        var categoria = repository.getReferenceById(id);
+        return ResponseEntity.ok(new DadosListagemCategoria(categoria));
+    }
+
+    @PutMapping
+    @Transactional
+    public ResponseEntity<DadosListagemCategoria> atualizar(@RequestBody @Valid DadosAtualizacaoCategoria dados) {
+        var categoria = repository.getReferenceById(dados.id());
+        categoria.atualizarInformacoes(dados.nome());
+        return ResponseEntity.ok(new DadosListagemCategoria(categoria));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> excluir(@PathVariable Long id) {
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

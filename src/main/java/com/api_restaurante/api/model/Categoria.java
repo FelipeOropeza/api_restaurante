@@ -21,4 +21,10 @@ public class Categoria {
     public Categoria(String nome) {
         this.nome = nome;
     }
+
+    public void atualizarInformacoes(String nome) {
+        if (nome != null && !nome.isBlank()) {
+            this.nome = nome;
+        }
+    }
 }
