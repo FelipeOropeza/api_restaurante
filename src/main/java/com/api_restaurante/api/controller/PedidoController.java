@@ -20,7 +20,7 @@ public class PedidoController {
     private PedidoService service;
 
     @PostMapping
-    public ResponseEntity criar(@RequestBody @Valid DadosCadastroPedido dados, 
+    public ResponseEntity<DadosDetalhamentoPedido> criar(@RequestBody @Valid DadosCadastroPedido dados, 
                                 @AuthenticationPrincipal Usuario usuario,
                                 UriComponentsBuilder uriBuilder) {
         var detalhamento = service.criarPedido(dados, usuario);
