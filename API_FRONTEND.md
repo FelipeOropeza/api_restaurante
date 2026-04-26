@@ -1,14 +1,16 @@
-# Documentação da API para Front-end
+# 🍽️ Documentação Completa da API - Sistema Restaurante
 
-Esta documentação contém todas as informações necessárias para integrar o front-end com a API do Restaurante.
+Esta documentação contém todas as informações necessárias para integrar o front-end com a API do Restaurante, incluindo autenticação, cardápio e o novo sistema de pedidos.
 
-## Informações Gerais
+---
+
+## 🚀 Informações Gerais
 
 - **URL Base:** `http://localhost:8080`
 - **CORS:** Permitido para `http://localhost:5173` (Vite padrão)
 - **Autenticação:** JWT (JSON Web Token) via Header `Authorization`.
   - Exemplo: `Authorization: Bearer <seu_token_jwt>`
-- **Formato de Dados:** JSON
+- **Formato de Dados:** JSON (UTF-8)
 
 ---
 
@@ -16,9 +18,9 @@ Esta documentação contém todas as informações necessárias para integrar o 
 
 ### Login
 Realiza a autenticação do usuário e retorna o token de acesso.
-
 - **Endpoint:** `POST /login`
-- **Corpo da Requisição:**
+- **Público:** Sim
+- **Corpo:**
 ```json
 {
   "email": "usuario@email.com",
@@ -37,152 +39,98 @@ Realiza a autenticação do usuário e retorna o token de acesso.
 
 ### Cadastro de Usuário
 Cria uma nova conta de usuário (padrão CLIENTE).
-
 - **Endpoint:** `POST /usuarios`
-- **Corpo da Requisição:**
-```json
-{
-  "nome": "Felipe",
-  "email": "felipe@email.com",
-  "senha": "123"
-}
-```
-- **Resposta:** `200 OK` (sem corpo)
+- **Público:** Sim
+- **Corpo:** `{ "nome": "Felipe", "email": "felipe@email.com", "senha": "123" }`
+- **Resposta:** `200 OK`
 
 ---
 
-## 📂 Categorias
+## 📂 Cardápio (Categorias e Produtos)
 
-### Listar Categorias (Paginado)
-Retorna uma lista de categorias com suporte a paginação.
-
+### Listar Categorias
 - **Endpoint:** `GET /categorias`
-- **Parâmetros de Query (Opcionais):**
-  - `page`: Número da página (começa em 0)
-  - `size`: Quantidade de itens por página
-  - `sort`: Campo para ordenação (ex: `nome,asc`)
-- **Resposta (200 OK):**
-```json
-{
-  "content": [
-    { "id": 1, "nome": "Bebidas" },
-    { "id": 2, "nome": "Lanches" }
-  ],
-  "pageable": { ... },
-  "totalElements": 2,
-  "totalPages": 1,
-  "size": 10,
-  "number": 0,
-  ...
-}
-```
+- **Público:** ✅ **Sim** (Não requer token)
+- **Parâmetros:** `page`, `size`, `sort`
+- **Resposta:** Lista paginada de categorias.
 
-### Detalhar Categoria
-- **Endpoint:** `GET /categorias/{id}`
-- **Resposta (200 OK):** `{ "id": 1, "nome": "Bebidas" }`
+### Listar Produtos
+- **Endpoint:** `GET /produtos`
+- **Público:** ✅ **Sim** (Não requer token)
+- **Parâmetros:** `page`, `size`, `sort`
+- **Resposta:** Lista paginada de produtos com nome, preço e categoria.
 
-### Cadastrar Categoria (🔒 ADMIN)
-- **Endpoint:** `POST /categorias`
-- **Corpo da Requisição:** `{ "nome": "Nova Categoria" }`
-- **Resposta (201 Created):** `{ "id": 3, "nome": "Nova Categoria" }`
+### Detalhes do Produto
+- **Endpoint:** `GET /produtos/{id}`
+- **Público:** ✅ **Sim**
+- **Resposta:** Objeto completo do produto com descrição.
 
-### Atualizar Categoria (🔒 ADMIN)
-- **Endpoint:** `PUT /categorias`
-- **Corpo da Requisição:** `{ "id": 3, "nome": "Nome Atualizado" }`
-- **Resposta (200 OK):** `{ "id": 3, "nome": "Nome Atualizado" }`
-
-### Excluir Categoria (🔒 ADMIN)
-- **Endpoint:** `DELETE /categorias/{id}`
-- **Resposta:** `204 No Content`
+> **Nota para Admin:** As operações de criação, edição e exclusão (POST, PUT, DELETE) em `/produtos` e `/categorias` requerem o tipo `ADMIN` e token JWT.
 
 ---
 
-## 🍔 Produtos
+## 🛒 Sistema de Pedidos
 
-### Listar Produtos (Paginado)
-- **Endpoint:** `GET /produtos`
-- **Resposta (200 OK):**
+O fluxo de pedidos envolve o gerenciamento do carrinho no frontend e a finalização via API.
+
+### Criar Novo Pedido
+Finaliza a compra e registra o pedido no sistema.
+- **Endpoint:** `POST /pedidos`
+- **Público:** 🔒 **Não** (Requer token JWT)
+- **Corpo (JSON):**
 ```json
 {
-  "content": [
+  "cep": "12345-678",
+  "complemento": "Apt 101, Bloco B",
+  "metodoPagamento": "PIX", // CARTAO, PIX ou DINHEIRO
+  "itens": [
     {
-      "id": 1,
-      "nome": "Hambúrguer",
-      "preco": 25.50,
-      "categoria": "Lanches"
+      "produtoId": 1,
+      "quantidade": 2
+    },
+    {
+      "produtoId": 5,
+      "quantidade": 1
     }
-  ],
-  ...
+  ]
 }
 ```
 
-### Detalhar Produto
-- **Endpoint:** `GET /produtos/{id}`
-- **Resposta (200 OK):**
-```json
-{
-  "id": 1,
-  "nome": "Hambúrguer",
-  "descricao": "Carne bovina, queijo, alface e tomate",
-  "preco": 25.50,
-  "categoria": "Lanches"
-}
-```
+### Meus Pedidos
+Lista todos os pedidos realizados pelo usuário logado.
+- **Endpoint:** `GET /pedidos`
+- **Público:** 🔒 **Não** (Requer token JWT)
+- **Resposta:** Lista de pedidos com status e valor total.
 
-### Cadastrar Produto (🔒 ADMIN)
-- **Endpoint:** `POST /produtos`
-- **Corpo da Requisição:**
-```json
-{
-  "nome": "Coca-Cola",
-  "descricao": "Lata 350ml",
-  "preco": 6.50,
-  "idCategoria": 1
-}
-```
-- **Resposta (201 Created):** Objeto detalhado do produto criado.
+### Status e Pagamentos (Enums)
 
-### Atualizar Produto (🔒 ADMIN)
-- **Endpoint:** `PUT /produtos`
-- **Corpo da Requisição:**
-```json
-{
-  "id": 1,
-  "nome": "Hambúrguer Gourmet",
-  "descricao": "Carne Angus, queijo brie e cebola caramelizada",
-  "preco": 35.00,
-  "idCategoria": 2
-}
-```
-*Obs: Todos os campos exceto `id` são opcionais na atualização.*
-
-### Excluir Produto (🔒 ADMIN)
-- **Endpoint:** `DELETE /produtos/{id}`
-- **Resposta:** `204 No Content`
+| Campo | Valores Possíveis |
+| :--- | :--- |
+| `metodoPagamento` | `CARTAO`, `PIX`, `DINHEIRO` |
+| `status` | `PENDENTE`, `PREPARANDO`, `SAIU_PARA_ENTREGA`, `ENTREGUE`, `CANCELADO` |
 
 ---
 
 ## ⚠️ Tratamento de Erros
 
-A API retorna os seguintes padrões de erro:
+| Código | Descrição | Exemplo de Resposta |
+| :--- | :--- | :--- |
+| **400** | Erro de Validação (campos faltando ou inválidos) | `[{"campo": "email", "mensagem": "não pode estar vazio"}]` |
+| **403** | Token expirado, inválido ou sem permissão (Admin/User) | - |
+| **404** | Recurso (ID) não encontrado | - |
 
-### 400 Bad Request (Erro de Validação)
-Ocorre quando campos obrigatórios não são enviados ou possuem formato inválido.
-```json
-[
-  {
-    "campo": "email",
-    "mensagem": "Email é obrigatório"
-  },
-  {
-    "campo": "senha",
-    "mensagem": "Senha é obrigatória"
-  }
-]
-```
+---
 
-### 403 Forbidden
-Ocorre quando o token é inválido, expirou ou o usuário não tem permissão para a rota (ex: cliente tentando acessar rota de admin).
+## 🛠️ Dicas de Integração (Frontend)
 
-### 404 Not Found
-Ocorre quando um recurso (ID) não existe no banco de dados.
+1. **Persistência do Carrinho:** Use `localStorage` ou `sessionStorage` para manter o carrinho se o usuário atualizar a página.
+2. **Cálculo de Total:** Calcule o total no frontend apenas para exibição, mas saiba que a API recalcula tudo no backend para segurança.
+3. **Página Inicial:** Como `GET /produtos` é público, você pode carregar o cardápio assim que o app abrir, sem forçar o login imediato.
+4. **Header Global:** Configure uma instância do Axios (ou fetch) para injetar o token automaticamente se ele existir:
+   ```javascript
+   api.interceptors.request.use(config => {
+     const token = localStorage.getItem('token');
+     if (token) config.headers.Authorization = `Bearer ${token}`;
+     return config;
+   });
+   ```
