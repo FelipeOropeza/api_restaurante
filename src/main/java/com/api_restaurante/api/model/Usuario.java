@@ -28,6 +28,13 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private TipoUsuario tipo = TipoUsuario.CLIENTE;
 
+    public TipoUsuario getTipo() {
+        if (tipo == null) {
+            return TipoUsuario.CLIENTE;
+        }
+        return tipo;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.tipo == TipoUsuario.ADMIN) {

@@ -2,6 +2,7 @@ package com.api_restaurante.api.controller;
 
 import com.api_restaurante.api.dto.security.DadosCadastroUsuario;
 import com.api_restaurante.api.model.Usuario;
+import com.api_restaurante.api.model.TipoUsuario;
 import com.api_restaurante.api.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -32,6 +33,7 @@ public class UsuarioController {
         usuario.setEmail(dados.email());
         usuario.setSenha(passwordEncoder.encode(dados.senha()));
         
+        usuario.setTipo(TipoUsuario.CLIENTE);
         repository.save(usuario);
         
         return ResponseEntity.ok().build();
