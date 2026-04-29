@@ -34,6 +34,7 @@ public class SecurityConfigurations {
                     req.requestMatchers(HttpMethod.GET, "/categorias/**").permitAll();
                     
                     // Restrições de Admin
+                    req.requestMatchers("/admin/**").hasRole("ADMIN");
                     req.requestMatchers(HttpMethod.POST, "/produtos/**").hasRole("ADMIN");
                     req.requestMatchers(HttpMethod.PUT, "/produtos/**").hasRole("ADMIN");
                     req.requestMatchers(HttpMethod.DELETE, "/produtos/**").hasRole("ADMIN");

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.api_restaurante.api.model.StatusPedido;
 
 @Service
 public class PedidoService {
@@ -54,5 +57,26 @@ public class PedidoService {
         return pedidoRepository.findAllByUsuario(usuario).stream()
                 .map(DadosDetalhamentoPedido::new)
                 .toList();
+    }
+
+    public Page<DadosDetalhamentoPedido> listarPedidosAdmin(Pageable paginacao, StatusPedido status) {
+        if (status != null) {
+            return pedidoRepository.findAllByStatus(status, paginacao).map(DadosDetalhamentoPedido::new);
+        }
+        return pedidoRepository.findAll(paginacao).map(DadosDetalhamentoPedido::new);
+    }
+
+    public DadosDetalhamentoPedido buscarPedidoAdmin(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+        return new DadosDetalhamentoPedido(pedido);
+    }
+
+    @Transactional
+    public DadosDetalhamentoPedido atualizarStatusPedido(Long id, StatusPedido status) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+        pedido.setStatus(status);
+        return new DadosDetalhamentoPedido(pedido);
     }
 }

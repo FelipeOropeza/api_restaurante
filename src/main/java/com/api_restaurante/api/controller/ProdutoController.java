@@ -28,7 +28,7 @@ public class ProdutoController {
 
     @GetMapping
     public ResponseEntity<Page<DadosListagemProduto>> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
-        var page = repository.findAll(paginacao).map(DadosListagemProduto::new);
+        var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemProduto::new);
         return ResponseEntity.ok(page);
     }
 
@@ -49,10 +49,10 @@ public class ProdutoController {
         return ResponseEntity.created(uri).body(new DadosDetalhamentoProduto(produto));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<DadosDetalhamentoProduto> atualizar(@RequestBody @Valid DadosAtualizacaoProduto dados) {
-        var produto = repository.getReferenceById(dados.id());
+    public ResponseEntity<DadosDetalhamentoProduto> atualizar(@PathVariable Long id, @RequestBody @Valid DadosAtualizacaoProduto dados) {
+        var produto = repository.getReferenceById(id);
         
         Categoria categoria = null;
         if (dados.idCategoria() != null) {
@@ -67,7 +67,8 @@ public class ProdutoController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> excluir(@PathVariable Long id) {
-        repository.deleteById(id);
+        var produto = repository.getReferenceById(id);
+        produto.excluir();
         return ResponseEntity.noContent().build();
     }
 }

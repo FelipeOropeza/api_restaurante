@@ -19,9 +19,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CategoriaController {
 
     private final CategoriaRepository repository;
+    private final com.api_restaurante.api.repository.ProdutoRepository produtoRepository;
 
-    public CategoriaController(CategoriaRepository repository) {
+    public CategoriaController(CategoriaRepository repository, com.api_restaurante.api.repository.ProdutoRepository produtoRepository) {
         this.repository = repository;
+        this.produtoRepository = produtoRepository;
     }
 
     @PostMapping
@@ -46,10 +48,10 @@ public class CategoriaController {
         return ResponseEntity.ok(new DadosListagemCategoria(categoria));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<DadosListagemCategoria> atualizar(@RequestBody @Valid DadosAtualizacaoCategoria dados) {
-        var categoria = repository.getReferenceById(dados.id());
+    public ResponseEntity<DadosListagemCategoria> atualizar(@PathVariable Long id, @RequestBody @Valid DadosAtualizacaoCategoria dados) {
+        var categoria = repository.getReferenceById(id);
         categoria.atualizarInformacoes(dados.nome());
         return ResponseEntity.ok(new DadosListagemCategoria(categoria));
     }
@@ -57,6 +59,9 @@ public class CategoriaController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> excluir(@PathVariable Long id) {
+        if (produtoRepository.existsByCategoriaId(id)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).build();
+        }
         repository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

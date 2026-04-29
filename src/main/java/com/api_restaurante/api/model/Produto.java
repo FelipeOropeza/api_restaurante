@@ -24,6 +24,8 @@ public class Produto {
     private String descricao;
 
     private BigDecimal preco;
+    
+    private Boolean ativo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
@@ -34,6 +36,7 @@ public class Produto {
         this.descricao = dados.descricao();
         this.preco = dados.preco();
         this.categoria = categoria;
+        this.ativo = true;
     }
 
     public void atualizarInformacoes(DadosAtualizacaoProduto dados, Categoria categoria) {
@@ -49,5 +52,9 @@ public class Produto {
         if (categoria != null) {
             this.categoria = categoria;
         }
+    }
+
+    public void excluir() {
+        this.ativo = false;
     }
 }
